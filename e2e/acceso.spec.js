@@ -1,5 +1,5 @@
 const { test, expect } = require("@playwright/test");
-const { caso, cuenta, iniciarSesion, tokenAPI } = require("./casos");
+const { caso, cuenta, iniciarSesion, tokenAPI, verificarBotonEntrar } = require("./casos");
 
 test.describe("Acceso, navegación y sesión", () => {
   caso("ACC-01", "Abrir la aplicación sin sesión", "Contexto nuevo de Chromium.",
@@ -43,9 +43,12 @@ test.describe("Acceso, navegación y sesión", () => {
         const form = page.locator("#login");
         await form.getByLabel("Correo").fill(email);
         await form.getByLabel("Contraseña").fill(password);
-        const response = page.waitForResponse((res) => res.url().endsWith("/api/auth/login"));
-        await form.getByRole("button", { name: "Entrar" }).click();
-        expect((await response).status()).toBe(401);
+        const boton = await verificarBotonEntrar(form);
+        const [response] = await Promise.all([
+          page.waitForResponse((res) => res.url().endsWith("/api/auth/login")),
+          boton.click(),
+        ]);
+        expect(response.status()).toBe(401);
         await expect(page.getByRole("status")).toHaveText("Credenciales incorrectas");
         await expect(page.locator("#admin")).toBeHidden();
       });

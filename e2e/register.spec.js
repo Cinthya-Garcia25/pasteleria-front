@@ -1,6 +1,6 @@
 const { expect } = require("@playwright/test");
 
-const { caso } = require("./casos");
+const { caso, verificarBotonEntrar } = require("./casos");
 
 caso("FLU-02", "Registrar una cuenta nueva y completar los CRUD",
   "Navegador sin sesión y correo de prueba disponible.",
@@ -28,7 +28,7 @@ caso("FLU-02", "Registrar una cuenta nueva y completar los CRUD",
     await expect(form).toBeHidden();
     await expect(login.getByLabel("Correo")).toHaveValue("cliente-e2e@example.test");
     await login.getByLabel("Contraseña").fill("registro-e2e-123");
-    await login.getByRole("button", { name: "Entrar" }).click();
+    await (await verificarBotonEntrar(login)).click();
     await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Módulos" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Productos" })).toBeVisible();

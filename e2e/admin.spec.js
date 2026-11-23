@@ -1,6 +1,6 @@
 const { expect } = require("@playwright/test");
 
-const { caso } = require("./casos");
+const { caso, verificarBotonEntrar } = require("./casos");
 
 caso("FLU-01", "Completar los CRUD con una cuenta existente",
   "Cuenta base en SQLite de pruebas y navegador sin sesión.",
@@ -13,10 +13,10 @@ caso("FLU-01", "Completar los CRUD con una cuenta existente",
     const editor = page.locator("#editor");
     await login.getByLabel("Correo").fill("admin@example.test");
     await login.getByLabel("Contraseña").fill("clave-incorrecta");
-    await page.getByRole("button", { name: "Entrar" }).click();
+    await (await verificarBotonEntrar(login)).click();
     await expect(page.getByRole("status")).toHaveText("Credenciales incorrectas");
     await login.getByLabel("Contraseña").fill("test-password-123");
-    await page.getByRole("button", { name: "Entrar" }).click();
+    await (await verificarBotonEntrar(login)).click();
 
     await editor.getByLabel("Nombre").fill("Tarta Playwright");
     await editor.getByLabel("Precio").fill("120");

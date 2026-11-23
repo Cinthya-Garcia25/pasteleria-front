@@ -46,7 +46,7 @@ jobs:
       - name: Pruebas Playwright
         id: playwright
         if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
-        run: npm run test:e2e
+        run: npm run test:e2e -- --max-failures=3
 
       - name: Registrar resultado en OpenObserve
         if: ${{ always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}

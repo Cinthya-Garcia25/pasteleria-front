@@ -1,5 +1,5 @@
 const { test, expect } = require("@playwright/test");
-const { caso, cuenta, iniciarSesion, tokenAPI } = require("./casos");
+const { caso, cuenta, iniciarSesion, tokenAPI, verificarBotonEntrar } = require("./casos");
 
 test.describe("Botones y enlaces de acceso", () => {
   caso("UI-01", "Entrar con el botón y credenciales válidas",
@@ -11,9 +11,12 @@ test.describe("Botones y enlaces de acceso", () => {
       const form = page.locator("#login");
       await form.getByLabel("Correo").fill(cuenta.email);
       await form.getByLabel("Contraseña").fill(cuenta.password);
-      const respuesta = page.waitForResponse((r) => r.url().endsWith("/api/auth/login"));
-      await form.getByRole("button", { name: "Entrar", exact: true }).click();
-      expect((await respuesta).status()).toBe(200);
+      const boton = await verificarBotonEntrar(form);
+      const [respuesta] = await Promise.all([
+        page.waitForResponse((r) => r.url().endsWith("/api/auth/login")),
+        boton.click(),
+      ]);
+      expect(respuesta.status()).toBe(200);
       await expect(page.getByRole("button", { name: "Productos", exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "Usuarios", exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "Cerrar sesión", exact: true })).toBeVisible();

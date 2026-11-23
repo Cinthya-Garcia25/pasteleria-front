@@ -10,12 +10,19 @@ function caso(id, nombre, precondicion, pasos, esperado, verificar) {
   });
 }
 
+async function verificarBotonEntrar(login) {
+  const boton = login.locator('button:not([type]), button[type="submit"]');
+  await expect(boton, "El formulario debe mostrar el botón de acceso").toBeVisible();
+  expect(await boton.innerText(), "El botón de acceso debe mostrar «Entrar»").toBe("Entrar");
+  return boton;
+}
+
 async function iniciarSesion(page) {
   await page.goto("/");
   const login = page.locator("#login");
   await login.getByLabel("Correo").fill(cuenta.email);
   await login.getByLabel("Contraseña").fill(cuenta.password);
-  await login.getByRole("button", { name: "Entrar" }).click();
+  await (await verificarBotonEntrar(login)).click();
   await expect(page.getByRole("heading", { name: "Productos", exact: true })).toBeVisible();
 }
 
@@ -34,4 +41,4 @@ function escenario(nombre, verificar) {
   });
 }
 
-module.exports = { caso, escenario, cuenta, iniciarSesion, tokenAPI };
+module.exports = { caso, escenario, cuenta, iniciarSesion, tokenAPI, verificarBotonEntrar };

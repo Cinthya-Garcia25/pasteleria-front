@@ -21,6 +21,9 @@ class Reporter {
       "Prueba " + this.numbers.get(test.id) + " | " +
       test.parent.project().name + " | " + test.title + " | " + status
     );
+    for (const error of result.errors) {
+      console.error(error.message || error.stack || error.value);
+    }
   }
 
   onError(error) {
