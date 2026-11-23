@@ -431,7 +431,6 @@ editor.onsubmit = (event) => {
       // Precio y stock se envían como números, no como texto
       data.precio = Number(data.precio);
       data.stock = Number(data.stock);
-      if (!id) data.nombre = "";
     } else if (!data.password) {
       // Al editar un usuario sin escribir contraseña, se conserva la actual
       delete data.password;
