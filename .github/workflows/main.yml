@@ -20,6 +20,10 @@ jobs:
   test:
     name: Pruebas y cobertura
     runs-on: ubuntu-latest
+    container:
+      # Mantener esta versión alineada con @playwright/test en package-lock.json.
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --ipc=host
 
     steps:
       - name: Checkout del código
@@ -31,22 +35,23 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Instalar herramientas para compilar SQLite
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends make g++
+
       - name: Instalar dependencias
+        id: npm
         run: npm ci
 
       - name: Jest con cobertura
         id: jest
         run: npm test -- --coverage --runInBand
 
-      - name: Instalar navegadores de Playwright
-        if: ${{ !cancelled() && steps.jest.outcome != 'skipped' }}
-        id: chromium
-        run: npx playwright install --with-deps chromium webkit
-
       - name: Pruebas Playwright
         id: playwright
-        if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
-        run: npm run test:e2e -- --max-failures=3
+        if: ${{ !cancelled() && steps.npm.outcome == 'success' }}
+        run: npm run test:e2e
 
       - name: Registrar resultado en OpenObserve
         if: ${{ always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}

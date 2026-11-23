@@ -1,9 +1,10 @@
 class Reporter {
   onBegin(_config, suite) {
-    this.numbers = new Map(suite.allTests().map((test, index) => {
+    this.tests = new Map(suite.allTests().map((test, index) => {
       const number = index + 1;
       test.annotations.push({ type: "Número de prueba", description: String(number) });
-      return [test.id, number];
+      const label = "Prueba " + number + " | " + test.parent.project().name + " | " + test.title;
+      return [test.id, { label, status: "NO EJECUTADA" }];
     }));
   }
 
@@ -17,10 +18,9 @@ class Reporter {
     };
     const status = labels[result.status] || result.status;
     test.annotations.push({ type: "Resultado", description: status });
-    console.log(
-      "Prueba " + this.numbers.get(test.id) + " | " +
-      test.parent.project().name + " | " + test.title + " | " + status
-    );
+    const entry = this.tests.get(test.id);
+    entry.status = status;
+    console.log(entry.label + " | " + status);
     for (const error of result.errors) {
       console.error(error.message || error.stack || error.value);
     }
@@ -31,6 +31,10 @@ class Reporter {
   }
 
   onEnd(result) {
+    console.log("\nResumen completo de Playwright (" + this.tests.size + " pruebas)");
+    for (const { label, status } of this.tests.values()) {
+      console.log(label + " | " + status);
+    }
     console.log("Ejecución terminada. Estado general: " + result.status);
   }
 }
