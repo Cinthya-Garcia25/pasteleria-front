@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Casa del Postre</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <h1 class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 27h20M8 27V17h16v10M8 21c2.7 0 2.7 2 5.3 2s2.7-2 5.4-2 2.6 2 5.3 2M11 17v-3h10v3M16 14V9"/><path d="M16 9c-1.4-1-1.4-3 0-4.5 1.4 1.5 1.4 3.5 0 4.5Z"/></svg>
+      <span>La Casa del Postre</span>
+    </h1><button id="logout" class="secondary" hidden>Cerrar sesión</button></header>
+  <p id="status" role="status"></p>
+  <form id="login">
+    <h2>Iniciar sesión</h2>
+    <p class="hint">Ingresa con tu correo y contraseña.</p>
+    <label>Correo<input name="email" type="email" required autocomplete="username"></label>
+    <label>Contraseña<input name="password" type="password" required autocomplete="current-password"></label>
+    <button>Entrar</button>
+    <p>¿No tienes cuenta? <a href="#registro">Crear cuenta</a></p>
+  </form>
+  <form id="register" hidden>
+    <h2>Crear cuenta</h2>
+    <p class="hint">La contraseña debe tener al menos 12 caracteres.</p>
+    <label>Nombre<input name="nombre" required maxlength="100" autocomplete="name"></label>
+    <label>Correo<input name="email" type="email" required maxlength="254" autocomplete="email"></label>
+    <label>Contraseña<input name="password" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></label>
+    <label>Confirmar contraseña<input name="confirm" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></label>
+    <button>Crear cuenta</button>
+    <p>¿Ya tienes cuenta? <a href="#">Iniciar sesión</a></p>
+  </form>
+  <p class="auth-footer">© 2026 La Casa del Postre. Todos los derechos reservados.</p>
+  <section id="admin" hidden>
+    <nav aria-label="Módulos"><button data-module="productos">Productos</button><button data-module="users">Usuarios</button></nav>
+    <h2 id="title"></h2>
+    <form id="editor"></form>
+    <ul id="items"></ul>
+  </section>
+</main>
+</body>
+</html>
