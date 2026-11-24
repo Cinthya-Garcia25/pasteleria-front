@@ -17,13 +17,38 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    name: Pruebas y cobertura
+  jest:
+    name: Backend · Jest y cobertura
+    runs-on: ubuntu-latest
+    outputs:
+      outcome: ${{ steps.jest.outcome }}
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Jest con cobertura
+        id: jest
+        run: npm test -- --coverage --runInBand
+
+  playwright:
+    name: Frontend · Playwright
     runs-on: ubuntu-latest
     container:
       # Mantener esta versión alineada con @playwright/test en package-lock.json.
       image: mcr.microsoft.com/playwright:v1.65.1-noble
       options: --ipc=host
+    outputs:
+      outcome: ${{ steps.playwright.outcome }}
 
     steps:
       - name: Checkout del código
@@ -41,32 +66,40 @@ jobs:
           apt-get install -y --no-install-recommends make g++
 
       - name: Instalar dependencias
-        id: npm
         run: npm ci
-
-      - name: Jest con cobertura
-        id: jest
-        run: npm test -- --coverage --runInBand
 
       - name: Pruebas Playwright
         id: playwright
-        if: ${{ !cancelled() && steps.npm.outcome == 'success' }}
         run: npm run test:e2e
 
-      - name: Registrar resultado en OpenObserve
-        if: ${{ always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
+  report-tests:
+    name: Registrar pruebas en OpenObserve
+    needs: [jest, playwright]
+    if: ${{ always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Enviar resultado de pruebas
         env:
           OPENOBSERVE_ENDPOINT: ${{ vars.OPENOBSERVE_ENDPOINT }}
           OPENOBSERVE_AUTH: ${{ secrets.OPENOBSERVE_AUTH }}
           EVENT_NAME: tests
-          EVENT_RESULT: ${{ job.status }}
-          JEST_RESULT: ${{ steps.jest.outcome }}
-          PLAYWRIGHT_RESULT: ${{ steps.playwright.outcome }}
+          EVENT_RESULT: ${{ contains(needs.*.result, 'cancelled') && 'cancelled' || (needs.jest.result == 'success' && needs.playwright.result == 'success' && 'success') || 'failure' }}
+          JEST_RESULT: ${{ needs.jest.outputs.outcome || 'skipped' }}
+          PLAYWRIGHT_RESULT: ${{ needs.playwright.outputs.outcome || 'skipped' }}
         run: node scripts/ci-event.js
 
   build-and-push:
     name: Construir y publicar imagen Docker
-    needs: test
+    needs: [jest, playwright, report-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
